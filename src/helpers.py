@@ -1,4 +1,3 @@
-import cv2
 import win32ui
 import numpy as np
 import win32gui
