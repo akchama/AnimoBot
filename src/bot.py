@@ -7,6 +7,10 @@ import keyboard
 
 
 class Bot:
+    @property
+    def debug(self):
+        return not sys.gettrace() is None
+
     def __init__(self):
         self.running = False
         self.game_img_buffer = background_screenshot('Terror Of Sea')
@@ -30,8 +34,15 @@ class Bot:
 
         for (x, y, w, h) in rectangles:
             cv2.rectangle(self.game_img_buffer, (x, y), (x + w, y + h), (0, 255, 255), 1)
+            cv2.putText(self.game_img_buffer, 'OpenCV', (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
+                        1, (255, 0, 0), 2, cv2.LINE_AA)
+
+        print("updating screen capture")
+        cv2.imshow("Game", self.game_img_buffer)
+        cv2.waitKey(1)
 
     def update_image(self):
         while True:
             self.game_img_buffer = background_screenshot('Terror Of Sea')
-            sleep(0.1)
+            print("Update game img")
+            sleep(0.3)

@@ -27,8 +27,6 @@ def background_screenshot(window_name):
     # or just the client area.
     # result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 1)
     result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 0)
-    print(result)
-
     # bmpinfo = saveBitMap.GetInfo()
     bmpstr = saveBitMap.GetBitmapBits(True)
     imcv = np.frombuffer(bmpstr, dtype=np.uint8).reshape((h, w, 4))[:, :, :3]
