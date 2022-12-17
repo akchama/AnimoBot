@@ -1,6 +1,8 @@
 import sys
+import threading
 
-from helpers import background_screenshot, get_locations
+from detection import Detection
+from helpers import background_screenshot
 from cv2 import cv2
 from time import time, sleep
 import keyboard
@@ -13,36 +15,46 @@ class Bot:
 
     def __init__(self):
         self.running = False
-        self.game_img_buffer = background_screenshot('Terror Of Sea')
-        self.oyster_img = cv2.imread('../img/oyster.jpg', cv2.IMREAD_UNCHANGED)
+        self.update_image = threading.Thread(target=self.update_image)
+        self.detector = Detection()
+
+    def start(self):
+        self.running = True
+
+        self.update_image.start()
+        self.detector.start()
+        while True:
+            if self.detector._screenshot is not None:
+                print("Update game logic")
+                self.update()
+                sleep(0.3)
+
+            # Press q to quit program
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                # stop bot thread
+                self.running = False
+                self.update_image.join()
+                self.detector.stop()
+                cv2.destroyAllWindows()
+                cv2.waitKey(1)
+                sys.exit()
 
     def update(self):
         self.running = True
-        match = cv2.matchTemplate(self.game_img_buffer, self.oyster_img, cv2.TM_CCOEFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(match)
-        w = self.oyster_img.shape[1]
-        h = self.oyster_img.shape[0]
-        print(max_loc)
-        y_loc, x_loc = get_locations(match, 0.8)  # 0.6 is accuracy threshold
-
-        rectangles = []
-        for (x, y) in zip(x_loc, y_loc):
-            rectangles.append([int(x), int(y), int(w), int(h)])
-            rectangles.append([int(x), int(y), int(w), int(h)])
-
-        rectangles, weights = cv2.groupRectangles(rectangles, 1, 0.2)
+        rectangles = self.detector.rectangles
 
         for (x, y, w, h) in rectangles:
-            cv2.rectangle(self.game_img_buffer, (x, y), (x + w, y + h), (0, 255, 255), 1)
-            cv2.putText(self.game_img_buffer, 'OpenCV', (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
-                        1, (255, 0, 0), 2, cv2.LINE_AA)
+            cv2.rectangle(self.detector._screenshot, (x, y), (x + w, y + h), (0, 255, 255), 1)
+            # cv2.putText(self.detector._screenshot, 'Oyster', (x, y), cv2.FONT_HERSHEY_SIMPLEX,
+            #             1, (255, 0, 0), 2, cv2.LINE_AA)
 
         print("updating screen capture")
-        cv2.imshow("Game", self.game_img_buffer)
+        cv2.imshow("Game", self.detector._screenshot)
         cv2.waitKey(1)
 
     def update_image(self):
-        while True:
-            self.game_img_buffer = background_screenshot('Terror Of Sea')
-            print("Update game img")
+        while self.running:
+            self.detector.update(background_screenshot('Terror Of Sea'))
+            print("Bot.update_image")
             sleep(0.3)
+        print("Exit")
