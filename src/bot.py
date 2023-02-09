@@ -87,16 +87,16 @@ class AnimoBot:
             # time for the tooltip to appear
             sleep(1.250)
             # confirm limestone tooltip
-            if self.confirm_tooltip(target_pos):
-                print(
-                    "Click on confirmed target at x:{} y:{}".format(
-                        screen_x, screen_y
-                    )
+            # if self.confirm_tooltip(target_pos):
+            print(
+                "Click on confirmed target at x:{} y:{}".format(
+                    screen_x, screen_y
                 )
-                found_limestone = True
-                pyautogui.click()
-                # save this position to the click history
-                self.click_history.append(target_pos)
+            )
+            found_limestone = True
+            pyautogui.click()
+            # save this position to the click history
+            self.click_history.append(target_pos)
             target_i += 1
 
         return found_limestone

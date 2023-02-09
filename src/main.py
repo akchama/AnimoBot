@@ -71,5 +71,7 @@ while True:
         bot.stop()
         cv.destroyAllWindows()
         break
+    elif key == ord("r"):
+        bot.state = BotState.SEARCHING
 
 print("Done.")
