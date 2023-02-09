@@ -257,8 +257,8 @@ class AnimoBot:
                     pass
 
             elif (
-                self.state == BotState.MOVING
-                or self.state == BotState.BACKTRACKING
+                    self.state == BotState.MOVING
+                    or self.state == BotState.BACKTRACKING
             ):
                 # see if we've stopped moving yet by comparing the current pixel mesh
                 # to the previously observed mesh

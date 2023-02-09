@@ -95,8 +95,6 @@ class WindowCapture:
         # https://github.com/opencv/opencv/issues/14866#issuecomment-580207109
         img = np.ascontiguousarray(img)
 
-        print("updating screen capture")
-
         return img
 
     # find the name of the window you're interested in.

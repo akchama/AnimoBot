@@ -37,6 +37,7 @@ class Detection:
     def stop(self):
         self.stopped = True
 
+    # this runs in a separate thread
     def run(self):
         # TODO: you can write your own time/iterations calculation to determine how fast this is
         while not self.stopped:
@@ -52,7 +53,6 @@ class Detection:
                 )
                 w = self._oyster_img.shape[1]
                 h = self._oyster_img.shape[0]
-                print("Detection.run")
                 y_loc, x_loc = get_locations(
                     match, 0.8
                 )  # accuracy threshold
@@ -63,7 +63,6 @@ class Detection:
                     rectangles.append([int(x), int(y), int(w), int(h)])
 
                 rectangles, weights = cv2.groupRectangles(rectangles, 1, 0.2)
-                print(weights)
 
                 for x, y, w, h in rectangles:
                     cv2.rectangle(
