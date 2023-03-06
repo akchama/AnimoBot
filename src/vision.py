@@ -1,8 +1,14 @@
 import cv2 as cv
 import numpy as np
 
+from helpers import get_text_area_points
+
 
 class Vision:
+    window_width = 0
+
+    def __init__(self, window_width):
+        self.window_width = window_width
 
     # given a list of [x, y, w, h] rectangles returned by find(), convert those into a list of
     # [x, y] positions in the center of those rectangles where we can click on those found items
@@ -12,8 +18,8 @@ class Vision:
         # Loop over all the rectangles
         for (x, y, w, h) in rectangles:
             # Determine the center position
-            center_x = x + int(w/2)
-            center_y = y + int(h/2)
+            center_x = x + int(w / 2)
+            center_y = y + int(h / 2)
             # Save the points
             points.append((center_x, center_y))
 
@@ -33,6 +39,11 @@ class Vision:
             # draw the box
             cv.rectangle(haystack_img, top_left, bottom_right, line_color, lineType=line_type)
 
+        # draw red rectangle which shows the text area
+        cv.rectangle(haystack_img, (get_text_area_points()[0], get_text_area_points()[1]),
+                     (get_text_area_points()[2], get_text_area_points()[3]),
+                     (0, 0, 255),
+                     lineType=line_type)
         return haystack_img
 
     # given a list of [x, y] positions and a canvas image to draw on, return an image with all

@@ -21,6 +21,10 @@ class AnimoBot:
     IGNORE_RADIUS = 130
     TOOLTIP_MATCH_THRESHOLD = 0.72
 
+    # match collected text
+    MESSAGE_OFFSET_Y = 110
+    MESSAGE_Y = 15
+
     # threading properties
     stopped = True
     lock = None
@@ -32,7 +36,7 @@ class AnimoBot:
     timestamp = None
     movement_screenshot = None
     window_offset = (0, 0)
-    window_w = 0
+    window_w = 800
     window_h = 0
     # limestone_tooltip = None
     click_history = []

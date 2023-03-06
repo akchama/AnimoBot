@@ -18,7 +18,7 @@ wincap = WindowCapture("Terror of Sea")
 # load the detector
 detector = Detection()
 # load an empty Vision class
-vision = Vision()
+vision = Vision(800)
 # initialize the bot
 bot = AnimoBot((wincap.offset_x, wincap.offset_y), (wincap.w, wincap.h))
 

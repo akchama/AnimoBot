@@ -39,8 +39,10 @@ class WindowCapture:
         w = 800
         h = 600
         win32gui.MoveWindow(self.hwnd, x0, y0, w + 100, h + 100, True)
-        self.w = window_rect[2] - window_rect[0]
-        self.h = window_rect[3] - window_rect[1]
+        # self.w = window_rect[2] - window_rect[0]
+        # self.h = window_rect[3] - window_rect[1]
+        self.w = w
+        self.h = h
 
         # account for the window border and titlebar and cut them off
         border_pixels = 8

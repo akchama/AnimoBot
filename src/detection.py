@@ -1,8 +1,10 @@
-import cv2
-import cv2 as cv
 from threading import Thread, Lock
 
-from helpers import get_locations
+import cv2
+from pytesseract import pytesseract
+from helpers import get_locations, get_text_area
+
+pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
 
 class Detection:
@@ -23,6 +25,9 @@ class Detection:
         self._oyster_img = cv2.imread(
             "../img/oyster1.jpg", cv2.IMREAD_UNCHANGED
         )
+        self._text_img = cv2.imread(
+            "../img/text.jpg", cv2.IMREAD_UNCHANGED
+        )
 
     def update(self, screenshot):
         self.lock.acquire()
@@ -39,18 +44,23 @@ class Detection:
 
     # this runs in a separate thread
     def run(self):
-        # TODO: you can write your own time/iterations calculation to determine how fast this is
         while not self.stopped:
             if self._screenshot is not None:
+
+                # # TODO: you can write your own time/iterations calculation to determine how fast this is
+                restricted_text_area = get_text_area(self._screenshot)  # return area to be scanned for text
+                text = pytesseract.image_to_string(restricted_text_area)
+                print(text)
                 # do object detection
+
                 # to use cascade classifier
                 # rectangles = self.cascade.detectMultiScale(self.screenshot)
 
                 # to use matchTemplate
-                # do object detection
                 match = cv2.matchTemplate(
                     self._screenshot, self._oyster_img, cv2.TM_CCOEFF_NORMED
                 )
+
                 w = self._oyster_img.shape[1]
                 h = self._oyster_img.shape[0]
                 y_loc, x_loc = get_locations(
