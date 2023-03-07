@@ -9,14 +9,14 @@ class BotState:
     INITIALIZING = 0
     SEARCHING = 1
     MOVING = 2
-    MINING = 3
+    ATTACKING = 3
     BACKTRACKING = 4
 
 
 class AnimoBot:
     # constants
     INITIALIZING_SECONDS = 6
-    MINING_SECONDS = 14
+    ATTACKING_SECONDS = 14
     MOVEMENT_STOPPED_THRESHOLD = 0.975
     IGNORE_RADIUS = 130
     TOOLTIP_MATCH_THRESHOLD = 0.72
@@ -24,6 +24,12 @@ class AnimoBot:
     # match collected text
     MESSAGE_OFFSET_Y = 110
     MESSAGE_Y = 15
+
+    # id text
+    ID_OFFSET_Y = 365
+    ID_Y = 25
+    ID_OFFSET_X = 415
+    ID_X = 30
 
     # threading properties
     stopped = True
@@ -41,7 +47,7 @@ class AnimoBot:
     # limestone_tooltip = None
     click_history = []
 
-    def __init__(self, window_offset, window_size):
+    def __init__(self, window_offset, window_size, detection):
         # create a thread lock object
         self.lock = Lock()
 
@@ -51,6 +57,8 @@ class AnimoBot:
         self.window_offset = window_offset
         self.window_w = window_size[0]
         self.window_h = window_size[1]
+
+        self.detection = detection  # set the Detection object instance
 
         # pre-load the needle image used to confirm our object detection
         # self.limestone_tooltip = cv.imread('limestone_tooltip.jpg', cv.IMREAD_UNCHANGED)
@@ -72,8 +80,8 @@ class AnimoBot:
         targets = self.targets_ordered_by_distance(self.targets)
 
         target_i = 0
-        found_limestone = False
-        while not found_limestone and target_i < len(targets):
+        found_collectable = False
+        while not found_collectable and target_i < len(targets):
             # if we stopped our script, exit this loop
             if self.stopped:
                 break
@@ -92,44 +100,17 @@ class AnimoBot:
             sleep(1.250)
             # confirm limestone tooltip
             # if self.confirm_tooltip(target_pos):
-            print(
-                "Click on confirmed target at x:{} y:{}".format(
-                    screen_x, screen_y
-                )
-            )
-            found_limestone = True
+            print("Click on confirmed target at x:{} y:{}".format(screen_x, screen_y))
+            found_collectable = True
             pyautogui.click()
             # save this position to the click history
             self.click_history.append(target_pos)
             target_i += 1
 
-        return found_limestone
+        return found_collectable
 
-    def have_stopped_moving(self):
-        # if we haven't stored a screenshot to compare to, do that first
-        if self.movement_screenshot is None:
-            self.movement_screenshot = self.screenshot.copy()
-            return False
-
-        # compare the old screenshot to the new screenshot
-        result = cv.matchTemplate(
-            self.screenshot, self.movement_screenshot, cv.TM_CCOEFF_NORMED
-        )
-        # we only care about the value when the two screenshots are laid perfectly over one
-        # another, so the needle position is (0, 0). since both images are the same size, this
-        # should be the only result that exists anyway
-        similarity = result[0][0]
-        print("Movement detection similarity: {}".format(similarity))
-
-        if similarity >= self.MOVEMENT_STOPPED_THRESHOLD:
-            # pictures look similar, so we've probably stopped moving
-            print("Movement detected stop")
-            return True
-
-        # looks like we're still moving.
-        # use this new screenshot to compare to the next one
-        self.movement_screenshot = self.screenshot.copy()
-        return False
+    def is_moving(self):
+        return self.detection.is_id_in_area()
 
     def targets_ordered_by_distance(self, targets):
         # our character is always in the center of the screen
@@ -150,9 +131,7 @@ class AnimoBot:
 
         # ignore targets at are too close to our character (within 130 pixels) to avoid
         # re-clicking a deposit we just mined
-        targets = [
-            t for t in targets if pythagorean_distance(t) > self.IGNORE_RADIUS
-        ]
+        targets = [t for t in targets if pythagorean_distance(t) > self.IGNORE_RADIUS]
 
         return targets
 
@@ -251,39 +230,32 @@ class AnimoBot:
                     self.lock.acquire()
                     self.state = BotState.MOVING
                     self.lock.release()
-                elif len(self.click_history) > 0:
-                    self.click_backtrack()
-                    self.lock.acquire()
-                    self.state = BotState.BACKTRACKING
-                    self.lock.release()
                 else:
                     # stay in place and keep searching
                     pass
 
-            elif (
-                    self.state == BotState.MOVING
-                    or self.state == BotState.BACKTRACKING
-            ):
+            elif self.state == BotState.MOVING:
                 # see if we've stopped moving yet by comparing the current pixel mesh
                 # to the previously observed mesh
-                if not self.have_stopped_moving():
+                if self.is_moving():
                     # wait a short time to allow for the character position to change
+                    print("ID IN AREA")
                     sleep(0.500)
                 else:
                     # reset the timestamp marker to the current time. switch state
-                    # to mining if we clicked on a deposit, or search again if we
+                    # to ATTACKING if we clicked on a deposit, or search again if we
                     # backtracked
                     self.lock.acquire()
                     if self.state == BotState.MOVING:
                         self.timestamp = time()
-                        self.state = BotState.MINING
+                        self.state = BotState.ATTACKING
                     elif self.state == BotState.BACKTRACKING:
                         self.state = BotState.SEARCHING
                     self.lock.release()
 
-            elif self.state == BotState.MINING:
-                # see if we're done mining. just wait some amount of time
-                if time() > self.timestamp + self.MINING_SECONDS:
+            elif self.state == BotState.ATTACKING:
+                # see if we're done ATTACKING. just wait some amount of time
+                if time() > self.timestamp + self.ATTACKING_SECONDS:
                     # return to the searching state
                     self.lock.acquire()
                     self.state = BotState.SEARCHING

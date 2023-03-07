@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 
-from helpers import get_text_area_points
+from helpers import get_text_area_points, get_id_area_points
 
 
 class Vision:
@@ -42,6 +42,12 @@ class Vision:
         # draw red rectangle which shows the text area
         cv.rectangle(haystack_img, (get_text_area_points()[0], get_text_area_points()[1]),
                      (get_text_area_points()[2], get_text_area_points()[3]),
+                     (0, 0, 255),
+                     lineType=line_type)
+
+        # draw red rectangle which shows the text area
+        cv.rectangle(haystack_img, (get_id_area_points()[0], get_id_area_points()[1]),
+                     (get_id_area_points()[2], get_id_area_points()[3]),
                      (0, 0, 255),
                      lineType=line_type)
         return haystack_img

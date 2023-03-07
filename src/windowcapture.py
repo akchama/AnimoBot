@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import win32gui, win32ui, win32con
 from threading import Thread, Lock
@@ -137,3 +139,4 @@ class WindowCapture:
             self.lock.acquire()
             self.screenshot = screenshot
             self.lock.release()
+            time.sleep(0.1)

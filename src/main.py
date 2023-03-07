@@ -20,12 +20,13 @@ detector = Detection()
 # load an empty Vision class
 vision = Vision(800)
 # initialize the bot
-bot = AnimoBot((wincap.offset_x, wincap.offset_y), (wincap.w, wincap.h))
+bot = AnimoBot((wincap.offset_x, wincap.offset_y), (wincap.w, wincap.h), detector)
 
-wincap.start()
-detector.start()
-bot.start()
+wincap.start()  # capture screenshots
+detector.start()  # detect targets
+bot.start()  # main bot logic
 
+# This loop updates stuff
 while True:
     # if we don't have a screenshot yet, don't run the code below this point yet
     if wincap.screenshot is None:
@@ -40,6 +41,7 @@ while True:
         # on right away when it does start
         targets = vision.get_click_points(detector.rectangles)
         bot.update_targets(targets)
+        print("Bot initializing...")
     elif bot.state == BotState.SEARCHING:
         # when searching for something to click on next, the bot needs to know what the click
         # points are for the current detection results. it also needs an updated screenshot
@@ -47,18 +49,19 @@ while True:
         targets = vision.get_click_points(detector.rectangles)
         bot.update_targets(targets)
         bot.update_screenshot(wincap.screenshot)
+        print("Bot searching...")
     elif bot.state == BotState.MOVING:
         # when moving, we need fresh screenshots to determine when we've stopped moving
         bot.update_screenshot(wincap.screenshot)
-    elif bot.state == BotState.MINING:
-        # nothing is needed while we wait for the mining to finish
+        print("Bot moving...")
+    elif bot.state == BotState.ATTACKING:
+        # nothing is needed while we wait for the attack to finish
+        print("Bot attacking...")
         pass
 
     if DEBUG:
         # draw the detection results onto the original image
-        detection_image = vision.draw_rectangles(
-            wincap.screenshot, detector.rectangles
-        )
+        detection_image = vision.draw_rectangles(wincap.screenshot, detector.rectangles)
         # display the images
         cv.imshow("Matches", detection_image)
 
