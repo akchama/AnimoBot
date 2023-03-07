@@ -8,15 +8,13 @@ from math import sqrt
 class BotState:
     INITIALIZING = 0
     SEARCHING = 1
-    MOVING = 2
-    ATTACKING = 3
-    BACKTRACKING = 4
+    ATTACKING = 2
+    COLLECTING = 3
 
 
 class AnimoBot:
     # constants
     INITIALIZING_SECONDS = 6
-    ATTACKING_SECONDS = 14
     MOVEMENT_STOPPED_THRESHOLD = 0.975
     IGNORE_RADIUS = 130
     TOOLTIP_MATCH_THRESHOLD = 0.72
@@ -156,27 +154,6 @@ class AnimoBot:
         # print('Tooltip not found.')
         return False
 
-    def click_backtrack(self):
-        # pop the top item off the clicked points stack. this will be the click that
-        # brought us to our current location.
-        last_click = self.click_history.pop()
-        # to undo this click, we must mirror it across the center point. so if our
-        # character is at the middle of the screen at ex. (100, 100), and our last
-        # click was at (120, 120), then to undo this we must now click at (80, 80).
-        # our character is always in the center of the screen
-        my_pos = (self.window_w / 2, self.window_h / 2)
-        mirrored_click_x = my_pos[0] - (last_click[0] - my_pos[0])
-        mirrored_click_y = my_pos[1] - (last_click[1] - my_pos[1])
-        # convert this screenshot position to a screen position
-        screen_x, screen_y = self.get_screen_position(
-            (mirrored_click_x, mirrored_click_y)
-        )
-        print("Backtracking to x:{} y:{}".format(screen_x, screen_y))
-        pyautogui.moveTo(x=screen_x, y=screen_y)
-        # short pause to let the mouse movement complete
-        sleep(0.500)
-        pyautogui.click()
-
     # translate a pixel position on a screenshot image to a pixel position on the screen.
     # pos = (x, y)
     # WARNING: if you move the window being captured after execution is started, this will
@@ -228,35 +205,11 @@ class AnimoBot:
                 # if not, backtrack or hold the current position
                 if success:
                     self.lock.acquire()
-                    self.state = BotState.MOVING
+                    self.state = BotState.COLLECTING
                     self.lock.release()
                 else:
                     # stay in place and keep searching
                     pass
 
-            elif self.state == BotState.MOVING:
-                # see if we've stopped moving yet by comparing the current pixel mesh
-                # to the previously observed mesh
-                if self.is_moving():
-                    # wait a short time to allow for the character position to change
-                    print("ID IN AREA")
-                    sleep(0.500)
-                else:
-                    # reset the timestamp marker to the current time. switch state
-                    # to ATTACKING if we clicked on a deposit, or search again if we
-                    # backtracked
-                    self.lock.acquire()
-                    if self.state == BotState.MOVING:
-                        self.timestamp = time()
-                        self.state = BotState.ATTACKING
-                    elif self.state == BotState.BACKTRACKING:
-                        self.state = BotState.SEARCHING
-                    self.lock.release()
-
             elif self.state == BotState.ATTACKING:
-                # see if we're done ATTACKING. just wait some amount of time
-                if time() > self.timestamp + self.ATTACKING_SECONDS:
-                    # return to the searching state
-                    self.lock.acquire()
-                    self.state = BotState.SEARCHING
-                    self.lock.release()
+                pass

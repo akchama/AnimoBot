@@ -50,10 +50,6 @@ while True:
         bot.update_targets(targets)
         bot.update_screenshot(wincap.screenshot)
         print("Bot searching...")
-    elif bot.state == BotState.MOVING:
-        # when moving, we need fresh screenshots to determine when we've stopped moving
-        bot.update_screenshot(wincap.screenshot)
-        print("Bot moving...")
     elif bot.state == BotState.ATTACKING:
         # nothing is needed while we wait for the attack to finish
         print("Bot attacking...")
