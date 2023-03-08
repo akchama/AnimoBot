@@ -1,3 +1,5 @@
+import time
+
 import cv2 as cv
 import os
 
@@ -50,6 +52,7 @@ while True:
         bot.update_targets(targets)
         bot.update_screenshot(wincap.screenshot)
         print("Bot searching...")
+        time.sleep(1)
     elif bot.state == BotState.ATTACKING:
         # nothing is needed while we wait for the attack to finish
         print("Bot attacking...")

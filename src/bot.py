@@ -20,8 +20,8 @@ class AnimoBot:
     TOOLTIP_MATCH_THRESHOLD = 0.72
 
     # match collected text
-    MESSAGE_OFFSET_Y = 110
-    MESSAGE_Y = 15
+    MESSAGE_OFFSET_Y = 108
+    MESSAGE_Y = 17
 
     # id text
     ID_OFFSET_Y = 365
@@ -202,14 +202,21 @@ class AnimoBot:
                     success = self.click_next_target()
 
                 # if successful, switch state to moving
-                # if not, backtrack or hold the current position
+                # if not, click to random position and keep searching
                 if success:
                     self.lock.acquire()
                     self.state = BotState.COLLECTING
                     self.lock.release()
                 else:
-                    # stay in place and keep searching
+                    # click at a random position on the screen
                     pass
-
+            elif self.state == BotState.COLLECTING:
+                sleep(1)
+                if self.is_moving():
+                    pass
+                else:
+                    self.lock.acquire()
+                    self.state = BotState.SEARCHING
+                    self.lock.release()
             elif self.state == BotState.ATTACKING:
                 pass
