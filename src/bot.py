@@ -19,10 +19,6 @@ class AnimoBot:
     IGNORE_RADIUS = 130
     TOOLTIP_MATCH_THRESHOLD = 0.72
 
-    # match collected text
-    MESSAGE_OFFSET_Y = 108
-    MESSAGE_Y = 17
-
     # threading properties
     stopped = True
     lock = None
@@ -34,8 +30,7 @@ class AnimoBot:
     timestamp = None
     movement_screenshot = None
     window_offset = (0, 0)
-    window_w = 800
-    window_h = 0
+    click_history = []
 
     def __init__(self, window_offset, window_size, detection, minimap):
         # create a thread lock object
@@ -101,7 +96,7 @@ class AnimoBot:
         return found_collectable
 
     def is_moving(self):
-        return self.detection.is_id_in_area()
+        return False
 
     def targets_ordered_by_distance(self, targets):
         # our character is always in the center of the screen

@@ -3,8 +3,10 @@ from time import sleep
 
 import cv2
 from pytesseract import pytesseract
-from helpers import get_locations, get_text_area, is_match
-from entities import id
+
+from entities.coordinates import Coordinates
+from entities.message import Message
+from helpers import get_locations, is_match
 
 pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
@@ -13,12 +15,16 @@ class Detection:
     # threading properties
     stopped = True
     lock = None
-    rectangles = []
+    targets = []
+    features = []
     # properties
     # cascade = None
     _screenshot = None
     _oyster_img = None
     _id_img = None
+
+    message: Message = None
+    coordinates: Coordinates = None
 
     def __init__(self, sleep_time):  # you can pass cascade file path here in the future
         # create a thread lock object
@@ -49,7 +55,7 @@ class Detection:
         while not self.stopped:
             if self._screenshot is not None:
                 # # TODO: you can write your own time/iterations calculation to determine how fast this is
-                restricted_text_area = get_text_area(
+                restricted_text_area = self.message.get_area(
                     self._screenshot
                 )  # return area to be scanned for text
                 text = pytesseract.image_to_string(restricted_text_area)
@@ -84,20 +90,15 @@ class Detection:
                         1,
                     )
 
+                self.features.append(self.message.get_area_points())
+
                 # lock the thread while updating the results
                 self.lock.acquire()
-                self.rectangles = rectangles
+                self.targets = rectangles
+                self.features.append(self.message.get_area_points())
+                self.features.append(self.coordinates.get_area_points())
                 self.lock.release()
                 sleep(self.sleep_time)
 
-    def is_id_in_area(self):
-        if self._screenshot is not None:
-            restricted_id_area = id.get_id_area(self._screenshot)
-            match = cv2.matchTemplate(
-                restricted_id_area, self._id_img, cv2.TM_CCOEFF_NORMED
-            )
-            if is_match(match, 0.8):
-                print("ID found")
-                return True
-        print("ID not found")
-        return False
+    def coordinate_changed(self):
+        pass

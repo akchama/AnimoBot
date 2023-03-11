@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
-from entities import id
-from helpers import get_text_area_points
+from entities.coordinates import Coordinates
+from entities.message import Message
 
 
 # given a list of [x, y, w, h] rectangles returned by find(), convert those into a list of
@@ -22,12 +22,13 @@ def get_click_points(rectangles):
 
 # given a list of [x, y, w, h] rectangles and a canvas image to draw on, return an image with
 # all of those rectangles drawn
-def draw_rectangles(haystack_img, rectangles):
+def draw_rectangles(haystack_img, targets, features):
     # these colors are actually BGR
     line_color = (0, 255, 0)
+    feature_color = (0, 0, 255)
     line_type = cv.LINE_4
 
-    for x, y, w, h in rectangles:
+    for x, y, w, h in targets:
         # determine the box positions
         top_left = (x, y)
         bottom_right = (x + w, y + h)
@@ -36,24 +37,10 @@ def draw_rectangles(haystack_img, rectangles):
             haystack_img, top_left, bottom_right, line_color, lineType=line_type
         )
 
-    # draw red rectangle which shows the text area
-    cv.rectangle(
-        haystack_img,
-        (get_text_area_points()[0], get_text_area_points()[1]),
-        (get_text_area_points()[2], get_text_area_points()[3]),
-        (0, 0, 255),
-        lineType=line_type,
-    )
-
-    # draw red rectangle which shows the text area
-    point1, point2 = id.get_id_area_points()
-    cv.rectangle(
-        haystack_img,
-        point1,
-        point2,
-        (0, 0, 255),
-        lineType=line_type,
-    )
+    for top_left, bottom_right in features:
+        cv.rectangle(
+            haystack_img, top_left, bottom_right, feature_color, lineType=line_type
+        )
     return haystack_img
 
 

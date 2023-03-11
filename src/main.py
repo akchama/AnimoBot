@@ -3,18 +3,24 @@ import cv2 as cv
 import vision
 from bot import AnimoBot, BotState
 from detection import Detection
+from entities.coordinates import Coordinates
+from entities.message import Message
 from entities.minimap import MiniMap
 from windowcapture import WindowCapture
 
 DEBUG = True
 
-# initialize the WindowCapture class
+# initializations
 win_cap = WindowCapture("Terror of Sea", sleep_time=0.5)
-# load the detector
+
+coordinates = Coordinates(win_cap)
+message = Message(win_cap)
+
 detector = Detection(sleep_time=0.5)
-# initialize the minimap
+detector.coordinates = coordinates
+detector.message = message
+
 minimap = MiniMap(win_cap)
-# initialize the bot
 bot = AnimoBot(
     (win_cap.offset_x, win_cap.offset_y), (win_cap.w, win_cap.h), detector, minimap
 )
@@ -36,14 +42,14 @@ while True:
     if bot.state == BotState.INITIALIZING:
         # while bot is waiting to start, go ahead and start giving it some targets to work
         # on right away when it does start
-        targets = vision.get_click_points(detector.rectangles)
+        targets = vision.get_click_points(detector.targets)
         bot.update_targets(targets)
         print("Bot initializing...")
     elif bot.state == BotState.SEARCHING:
         # when searching for something to click on next, the bot needs to know what the click
         # points are for the current detection results. it also needs an updated screenshot
         # to verify the hover tooltip once it has moved the mouse to that position
-        targets = vision.get_click_points(detector.rectangles)
+        targets = vision.get_click_points(detector.targets)
         bot.update_targets(targets)
         bot.update_screenshot(win_cap.screenshot)
         print("Bot searching...")
@@ -56,7 +62,7 @@ while True:
     if DEBUG:
         # draw the detection results onto the original image
         detection_image = vision.draw_rectangles(
-            win_cap.screenshot, detector.rectangles
+            win_cap.screenshot, detector.targets, detector.features
         )
         # display the images
         cv.imshow("Matches", detection_image)

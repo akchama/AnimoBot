@@ -39,7 +39,6 @@ class WindowCapture:
         x0, y0, x1, y1 = window_rect
         w = x1 - x0
         h = y1 - y0
-        win32gui.MoveWindow(self.hwnd, x0, y0, w, h, True)
         self.w = window_rect[2] - window_rect[0]
         self.h = window_rect[3] - window_rect[1]
         self.w = w
