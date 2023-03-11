@@ -20,9 +20,10 @@ class WindowCapture:
     offset_y = 0
 
     # constructor
-    def __init__(self, window_name=None):
+    def __init__(self, window_name=None, delay=0.5):
         # create a thread lock object
         self.lock = Lock()
+        self.delay = delay
 
         # find the handle for the window we want to capture.
         # if no window name is given, capture the entire screen
@@ -36,13 +37,11 @@ class WindowCapture:
         # get the window size
         window_rect = win32gui.GetWindowRect(self.hwnd)
         x0, y0, x1, y1 = window_rect
-        # w = x1 - x0
-        # h = y1 - y0
-        w = 800
-        h = 600
-        win32gui.MoveWindow(self.hwnd, x0, y0, w + 100, h + 100, True)
-        # self.w = window_rect[2] - window_rect[0]
-        # self.h = window_rect[3] - window_rect[1]
+        w = x1 - x0
+        h = y1 - y0
+        win32gui.MoveWindow(self.hwnd, x0, y0, w, h, True)
+        self.w = window_rect[2] - window_rect[0]
+        self.h = window_rect[3] - window_rect[1]
         self.w = w
         self.h = h
 
@@ -106,11 +105,11 @@ class WindowCapture:
     # https://stackoverflow.com/questions/55547940/how-to-get-a-list-of-the-name-of-every-open-window
     @staticmethod
     def list_window_names():
-        def winEnumHandler(hwnd, ctx):
+        def win_enum_handler(hwnd, ctx):
             if win32gui.IsWindowVisible(hwnd):
                 print(hex(hwnd), win32gui.GetWindowText(hwnd))
 
-        win32gui.EnumWindows(winEnumHandler, None)
+        win32gui.EnumWindows(win_enum_handler, None)
 
     # translate a pixel position on a screenshot image to a pixel position on the screen.
     # pos = (x, y)
@@ -118,7 +117,7 @@ class WindowCapture:
     # return incorrect coordinates, because the window position is only calculated in
     # the __init__ constructor.
     def get_screen_position(self, pos):
-        return (pos[0] + self.offset_x, pos[1] + self.offset_y)
+        return pos[0] + self.offset_x, pos[1] + self.offset_y
 
     # threading methods
 

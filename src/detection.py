@@ -1,4 +1,5 @@
 from threading import Thread, Lock
+from time import sleep
 
 import cv2
 from pytesseract import pytesseract
@@ -84,6 +85,7 @@ class Detection:
                 self.lock.acquire()
                 self.rectangles = rectangles
                 self.lock.release()
+                sleep(0.5)
 
     def is_id_in_area(self):
         if self._screenshot is not None:

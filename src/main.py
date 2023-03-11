@@ -1,41 +1,36 @@
 import time
-
 import cv2 as cv
-import os
-
+import vision
 from bot import AnimoBot, BotState
 from detection import Detection
-from vision import Vision
+from entities.minimap import MiniMap
 from windowcapture import WindowCapture
-
-# Change the working directory to the folder this script is in.
-# Doing this because I'll be putting the files from each video in their
-# own folder on GitHub
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
 
 # initialize the WindowCapture class
-wincap = WindowCapture("Terror of Sea")
+win_cap = WindowCapture("Terror of Sea", delay=0.1)
 # load the detector
 detector = Detection()
-# load an empty Vision class
-vision = Vision(800)
+# initialize the minimap
+minimap = MiniMap(win_cap)
 # initialize the bot
-bot = AnimoBot((wincap.offset_x, wincap.offset_y), (wincap.w, wincap.h), detector)
+bot = AnimoBot(
+    (win_cap.offset_x, win_cap.offset_y), (win_cap.w, win_cap.h), detector, minimap
+)
 
-wincap.start()  # capture screenshots
+win_cap.start()  # capture screenshots
 detector.start()  # detect targets
 bot.start()  # main bot logic
 
 # This loop updates stuff
 while True:
     # if we don't have a screenshot yet, don't run the code below this point yet
-    if wincap.screenshot is None:
+    if win_cap.screenshot is None:
         continue
 
     # give detector the current screenshot to search for objects in
-    detector.update(wincap.screenshot)
+    detector.update(win_cap.screenshot)
 
     # update the bot with the data it needs right now
     if bot.state == BotState.INITIALIZING:
@@ -50,7 +45,7 @@ while True:
         # to verify the hover tooltip once it has moved the mouse to that position
         targets = vision.get_click_points(detector.rectangles)
         bot.update_targets(targets)
-        bot.update_screenshot(wincap.screenshot)
+        bot.update_screenshot(win_cap.screenshot)
         print("Bot searching...")
         time.sleep(1)
     elif bot.state == BotState.ATTACKING:
@@ -60,7 +55,9 @@ while True:
 
     if DEBUG:
         # draw the detection results onto the original image
-        detection_image = vision.draw_rectangles(wincap.screenshot, detector.rectangles)
+        detection_image = vision.draw_rectangles(
+            win_cap.screenshot, detector.rectangles
+        )
         # display the images
         cv.imshow("Matches", detection_image)
 
@@ -68,7 +65,7 @@ while True:
     # waits 1 ms every loop to process key presses
     key = cv.waitKey(1)
     if key == ord("q"):
-        wincap.stop()
+        win_cap.stop()
         detector.stop()
         bot.stop()
         cv.destroyAllWindows()

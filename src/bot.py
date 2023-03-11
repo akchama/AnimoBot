@@ -1,4 +1,4 @@
-import cv2 as cv
+from random import randint
 import pyautogui
 from time import sleep, time
 from threading import Thread, Lock
@@ -42,10 +42,8 @@ class AnimoBot:
     window_offset = (0, 0)
     window_w = 800
     window_h = 0
-    # limestone_tooltip = None
-    click_history = []
 
-    def __init__(self, window_offset, window_size, detection):
+    def __init__(self, window_offset, window_size, detection, minimap):
         # create a thread lock object
         self.lock = Lock()
 
@@ -57,12 +55,13 @@ class AnimoBot:
         self.window_h = window_size[1]
 
         self.detection = detection  # set the Detection object instance
+        self.minimap = minimap  # set the Minimap object instance
 
-        # pre-load the needle image used to confirm our object detection
+        # preload the needle image used to confirm our object detection
         # self.limestone_tooltip = cv.imread('limestone_tooltip.jpg', cv.IMREAD_UNCHANGED)
 
         # start bot in the initializing mode to allow us time to get setup.
-        # mark the time at which this started so we know when to complete it
+        # mark the time at which this started so, we know when to complete it
         self.state = BotState.INITIALIZING
         self.timestamp = time()
 
@@ -133,34 +132,13 @@ class AnimoBot:
 
         return targets
 
-    def confirm_tooltip(self, target_position):
-        # check the current screenshot for the limestone tooltip using match template
-        result = cv.matchTemplate(
-            self.screenshot, self.limestone_tooltip, cv.TM_CCOEFF_NORMED
-        )
-        # get the best match postition
-        min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
-        # if we can closely match the tooltip image, consider the object found
-        if max_val >= self.TOOLTIP_MATCH_THRESHOLD:
-            # print('Tooltip found in image at {}'.format(max_loc))
-            # screen_loc = self.get_screen_position(max_loc)
-            # print('Found on screen at {}'.format(screen_loc))
-            # mouse_position = pyautogui.position()
-            # print('Mouse on screen at {}'.format(mouse_position))
-            # offset = (mouse_position[0] - screen_loc[0], mouse_position[1] - screen_loc[1])
-            # print('Offset calculated as x: {} y: {}'.format(offset[0], offset[1]))
-            # the offset I always got was Offset calculated as x: -22 y: -29
-            return True
-        # print('Tooltip not found.')
-        return False
-
     # translate a pixel position on a screenshot image to a pixel position on the screen.
     # pos = (x, y)
     # WARNING: if you move the window being captured after execution is started, this will
     # return incorrect coordinates, because the window position is only calculated in
     # the WindowCapture __init__ constructor.
     def get_screen_position(self, pos):
-        return (pos[0] + self.window_offset[0], pos[1] + self.window_offset[1])
+        return pos[0] + self.window_offset[0], pos[1] + self.window_offset[1]
 
     # threading methods
 
@@ -181,6 +159,14 @@ class AnimoBot:
 
     def stop(self):
         self.stopped = True
+
+    def click_random_position(self):
+        # click a random position on the screen
+        x = randint(0, self.window_w)
+        y = randint(0, self.window_h)
+        x, y = self.get_screen_position((x, y))
+        pyautogui.moveTo(x=x, y=y)
+        pyautogui.click()
 
     # main logic controller
     def run(self):
@@ -208,8 +194,12 @@ class AnimoBot:
                     self.state = BotState.COLLECTING
                     self.lock.release()
                 else:
-                    # click at a random position on the screen
+                    # click at a random position on the screen if bot is not moving
+                    # sleep(3)
+                    # if not self.is_moving():
+                    #     self.click_random_position()
                     pass
+
             elif self.state == BotState.COLLECTING:
                 sleep(1)
                 if self.is_moving():
