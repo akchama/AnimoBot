@@ -13,12 +13,9 @@ DEBUG = True
 # initializations
 win_cap = WindowCapture("Terror of Sea", sleep_time=0.5)
 
-coordinates = Coordinates(win_cap)
-message = Message(win_cap)
-
 detector = Detection(sleep_time=0.5)
-detector.coordinates = coordinates
-detector.message = message
+detector.coordinates = Coordinates(win_cap)
+detector.message = Message(win_cap)
 
 minimap = MiniMap(win_cap)
 bot = AnimoBot(

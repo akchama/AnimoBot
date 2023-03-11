@@ -90,13 +90,10 @@ class Detection:
                         1,
                     )
 
-                self.features.append(self.message.get_area_points())
-
                 # lock the thread while updating the results
                 self.lock.acquire()
                 self.targets = rectangles
-                self.features.append(self.message.get_area_points())
-                self.features.append(self.coordinates.get_area_points())
+                self.features = [self.message.get_area_points(), self.coordinates.get_area_points()]
                 self.lock.release()
                 sleep(self.sleep_time)
 

@@ -3,7 +3,7 @@ from windowcapture import WindowCapture
 
 class Coordinates:
     instance = None
-    OFFSET_X = 0
+    OFFSET_X = 3
     OFFSET_Y = 0
 
     WIDTH = 75
@@ -13,9 +13,7 @@ class Coordinates:
 
     def __init__(self, win_cap):
         self.win_cap = win_cap
-
-        width = int(win_cap.w)
-        self.OFFSET_X = width
+        self.OFFSET_X = int((win_cap.w - self.WIDTH) / 2)
 
     def get_area(self, img):
         return img[
