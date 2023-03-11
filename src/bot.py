@@ -23,12 +23,6 @@ class AnimoBot:
     MESSAGE_OFFSET_Y = 108
     MESSAGE_Y = 17
 
-    # id text
-    ID_OFFSET_Y = 365
-    ID_Y = 25
-    ID_OFFSET_X = 415
-    ID_X = 30
-
     # threading properties
     stopped = True
     lock = None

@@ -3,7 +3,8 @@ from time import sleep
 
 import cv2
 from pytesseract import pytesseract
-from helpers import get_locations, get_text_area, get_id_area, is_match
+from helpers import get_locations, get_text_area, is_match
+from entities import id
 
 pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
@@ -19,7 +20,7 @@ class Detection:
     _oyster_img = None
     _id_img = None
 
-    def __init__(self):  # you can pass cascade file path here in the future
+    def __init__(self, sleep_time):  # you can pass cascade file path here in the future
         # create a thread lock object
         self.lock = Lock()
         # load the trained model
@@ -27,6 +28,8 @@ class Detection:
         self._oyster_img = cv2.imread("../img/oyster1.jpg", cv2.IMREAD_UNCHANGED)
         self._text_img = cv2.imread("../img/text.jpg", cv2.IMREAD_UNCHANGED)
         self._id_img = cv2.imread("../img/id.jpg", cv2.IMREAD_UNCHANGED)
+
+        self.sleep_time = sleep_time
 
     def update(self, screenshot):
         self.lock.acquire()
@@ -85,14 +88,16 @@ class Detection:
                 self.lock.acquire()
                 self.rectangles = rectangles
                 self.lock.release()
-                sleep(0.5)
+                sleep(self.sleep_time)
 
     def is_id_in_area(self):
         if self._screenshot is not None:
-            restricted_id_area = get_id_area(self._screenshot)
+            restricted_id_area = id.get_id_area(self._screenshot)
             match = cv2.matchTemplate(
                 restricted_id_area, self._id_img, cv2.TM_CCOEFF_NORMED
             )
             if is_match(match, 0.8):
+                print("ID found")
                 return True
+        print("ID not found")
         return False

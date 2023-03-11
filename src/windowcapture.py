@@ -20,10 +20,10 @@ class WindowCapture:
     offset_y = 0
 
     # constructor
-    def __init__(self, window_name=None, delay=0.5):
+    def __init__(self, window_name=None, sleep_time=0.5):
         # create a thread lock object
         self.lock = Lock()
-        self.delay = delay
+        self.sleep_time = sleep_time
 
         # find the handle for the window we want to capture.
         # if no window name is given, capture the entire screen
@@ -116,6 +116,7 @@ class WindowCapture:
     # WARNING: if you move the window being captured after execution is started, this will
     # return incorrect coordinates, because the window position is only calculated in
     # the __init__ constructor.
+    # TODO: fix this
     def get_screen_position(self, pos):
         return pos[0] + self.offset_x, pos[1] + self.offset_y
 
@@ -138,4 +139,4 @@ class WindowCapture:
             self.lock.acquire()
             self.screenshot = screenshot
             self.lock.release()
-            time.sleep(0.1)
+            time.sleep(self.sleep_time)

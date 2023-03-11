@@ -9,9 +9,9 @@ from windowcapture import WindowCapture
 DEBUG = True
 
 # initialize the WindowCapture class
-win_cap = WindowCapture("Terror of Sea", delay=0.1)
+win_cap = WindowCapture("Terror of Sea", sleep_time=0.5)
 # load the detector
-detector = Detection()
+detector = Detection(sleep_time=0.5)
 # initialize the minimap
 minimap = MiniMap(win_cap)
 # initialize the bot
@@ -47,7 +47,7 @@ while True:
         bot.update_targets(targets)
         bot.update_screenshot(win_cap.screenshot)
         print("Bot searching...")
-        time.sleep(1)
+        time.sleep(0.5)
     elif bot.state == BotState.ATTACKING:
         # nothing is needed while we wait for the attack to finish
         print("Bot attacking...")
