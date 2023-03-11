@@ -3,7 +3,7 @@ from windowcapture import WindowCapture
 
 class Message:
     OFFSET_X = 0
-    OFFSET_Y = 108
+    OFFSET_Y = 107
 
     HEIGHT = 18
     HORIZONTAL_OFFSET = 10

@@ -54,7 +54,7 @@ class Detection:
     def run(self):
         while not self.stopped:
             if self._screenshot is not None:
-                # # TODO: you can write your own time/iterations calculation to determine how fast this is
+                # TODO: you can write your own time/iterations calculation to determine how fast this is
                 restricted_text_area = self.message.get_area(
                     self._screenshot
                 )  # return area to be scanned for text
@@ -81,19 +81,13 @@ class Detection:
 
                 rectangles, weights = cv2.groupRectangles(rectangles, 1, 0.2)
 
-                for x, y, w, h in rectangles:
-                    cv2.rectangle(
-                        self._screenshot,
-                        (x, y),
-                        (x + w, y + h),
-                        (0, 255, 255),
-                        1,
-                    )
-
                 # lock the thread while updating the results
                 self.lock.acquire()
                 self.targets = rectangles
-                self.features = [self.message.get_area_points(), self.coordinates.get_area_points()]
+                self.features = [
+                    self.message.get_area_points(),
+                    self.coordinates.get_area_points()
+                ]
                 self.lock.release()
                 sleep(self.sleep_time)
 

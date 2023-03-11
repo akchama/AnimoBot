@@ -3,8 +3,8 @@ from windowcapture import WindowCapture
 
 class Coordinates:
     instance = None
-    OFFSET_X = 3
-    OFFSET_Y = 0
+    OFFSET_X = 0
+    OFFSET_Y = 3
 
     WIDTH = 75
     HEIGHT = 20
