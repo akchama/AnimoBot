@@ -2,6 +2,7 @@ from threading import Thread, Lock
 from time import sleep
 
 import cv2
+import numpy as np
 from pytesseract import pytesseract
 
 from entities.coordinates import Coordinates
@@ -29,11 +30,20 @@ class Detection:
     def __init__(self, sleep_time):  # you can pass cascade file path here in the future
         # create a thread lock object
         self.lock = Lock()
-        # load the trained model
-        # self.cascade = cv.CascadeClassifier(model_file_path)
-        self._oyster_img = cv2.imread("../img/oyster1.jpg", cv2.IMREAD_UNCHANGED)
+
+        # load oyster img
+        _oyster_img = cv2.imread("../img/1.png", cv2.IMREAD_UNCHANGED)
+
+        # resize oyster image
+        scale_percent = 30  # percent of original size
+        width = int(_oyster_img.shape[1] * scale_percent / 100)
+        height = int(_oyster_img.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        resized = cv2.resize(_oyster_img, dim, interpolation=cv2.INTER_AREA)
+        cv2.imshow("resized", resized)
+        self._oyster_img = resized
+
         self._text_img = cv2.imread("../img/text.jpg", cv2.IMREAD_UNCHANGED)
-        self._id_img = cv2.imread("../img/id.jpg", cv2.IMREAD_UNCHANGED)
 
         self.sleep_time = sleep_time
 
@@ -60,19 +70,21 @@ class Detection:
                 )  # return area to be scanned for text
                 text = pytesseract.image_to_string(restricted_text_area)
                 print(text)
+
                 # do object detection
+                template = self._oyster_img[:, :, 0:3]
+                alpha = self._oyster_img[:, :, 3]
+                alpha = cv2.merge([alpha, alpha, alpha])
 
-                # to use cascade classifier
-                # rectangles = self.cascade.detectMultiScale(self.screenshot)
-
-                # to use matchTemplate
+                h = self._screenshot.shape[0]
+                sea_area = self._screenshot[:h - 67, :]
                 match = cv2.matchTemplate(
-                    self._screenshot, self._oyster_img, cv2.TM_CCOEFF_NORMED
+                    sea_area, template, cv2.TM_CCORR_NORMED, mask=alpha
                 )
 
                 w = self._oyster_img.shape[1]
                 h = self._oyster_img.shape[0]
-                y_loc, x_loc = get_locations(match, 0.8)  # accuracy threshold
+                y_loc, x_loc = get_locations(match, 0.95)  # accuracy threshold
 
                 rectangles = []
                 for x, y in zip(x_loc, y_loc):
