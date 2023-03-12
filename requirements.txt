@@ -7,3 +7,6 @@ setuptools==60.2.0
 wheel==0.37.1
 Pillow~=9.3.0
 keyboard~=0.13.5
+
+PyAutoGUI~=0.9.53
+pytesseract~=0.3.10

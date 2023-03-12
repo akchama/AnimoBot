@@ -1,6 +1,5 @@
 import time
 from random import randint
-
 import pyautogui
 
 from windowcapture import WindowCapture
@@ -19,9 +18,12 @@ class MiniMap:
     HEIGHT = 135
 
     win_cap: WindowCapture = None
+    detector = None
 
-    def __init__(self, win_cap):
+    def __init__(self, win_cap, detector):
         self.win_cap = win_cap
+        self.detector = detector
+
         self.x = win_cap.w - self.OFFSET_X_FROM_RIGHT
         self.y = self.OFFSET_Y_FROM_TOP
 
@@ -35,15 +37,21 @@ class MiniMap:
         time.sleep(1.250)
         pyautogui.click()
 
+    def get_area(self, img):
+        return img[
+               self.OFFSET_Y_FROM_TOP: self.OFFSET_Y_FROM_TOP + self.HEIGHT,
+               self.win_cap.w - self.OFFSET_X_FROM_RIGHT: self.win_cap.w - self.OFFSET_X_FROM_RIGHT + self.WIDTH,
+               ]
+
     def click_next_target(self):
-        screen_x, screen_y = self.get_screen_position(target_pos)
-        print("Moving mouse to x:{} y:{}".format(screen_x, screen_y))
+        screen_x, screen_y = self.get_screen_position(self.detector.minimap_targets[0])
+        print("Minimap: Moving mouse to:{} y:{}".format(screen_x, screen_y))
         pyautogui.moveTo(x=screen_x, y=screen_y)
 
         # short pause to let the mouse movement complete and allow
         time.sleep(1.250)
-        
-        print("Click on target at x:{} y:{}".format(screen_x, screen_y))
+
+        print("Minimap: Click on target at x:{} y:{}".format(screen_x, screen_y))
         pyautogui.click()
 
     def get_screen_position(self, pos):

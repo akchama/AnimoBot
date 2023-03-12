@@ -35,9 +35,8 @@ class AnimoBot:
     click_history = []
 
     detection: Detection = None
-    minimap: MiniMap = None
 
-    def __init__(self, window_offset, window_size, detection, minimap):
+    def __init__(self, window_offset, window_size, detection):
         # create a thread lock object
         self.lock = Lock()
 
@@ -49,10 +48,6 @@ class AnimoBot:
         self.window_h = window_size[1]
 
         self.detection = detection  # set the Detection object instance
-        self.minimap = minimap  # set the Minimap object instance
-
-        # preload the needle image used to confirm our object detection
-        # self.limestone_tooltip = cv.imread('limestone_tooltip.jpg', cv.IMREAD_UNCHANGED)
 
         # start bot in the initializing mode to allow us time to get setup.
         # mark the time at which this started so, we know when to complete it
@@ -63,11 +58,10 @@ class AnimoBot:
         # 1. order targets by distance from center
         # loop:
         #   2. hover over the nearest target
-        #   3. confirm that it's limestone via the tooltip
-        #   4. if it's not, check the next target
+        #   3. if it's not, check the next target
         # endloop
-        # 5. if no target was found return false
-        # 6. click on the found target and return true
+        # 4. if no target was found return false
+        # 5. click on the found target and return true
         targets = self.targets_ordered_by_distance(self.targets)
 
         target_i = 0
@@ -89,8 +83,6 @@ class AnimoBot:
             # short pause to let the mouse movement complete and allow
             # time for the tooltip to appear
             sleep(1.250)
-            # confirm limestone tooltip
-            # if self.confirm_tooltip(target_pos):
             print("Click on confirmed target at x:{} y:{}".format(screen_x, screen_y))
             found_collectable = True
             self.state = BotState.COLLECTING
@@ -167,7 +159,7 @@ class AnimoBot:
                     self.lock.release()
 
             elif self.state == BotState.SEARCHING:
-                # check the given click point targets, confirm a limestone deposit,
+                # check the given click point targets, confirm a collectable,
                 # then click it.
                 success = self.click_next_target()
                 # if not successful, try one more time
@@ -185,9 +177,9 @@ class AnimoBot:
                     # click at a random position on the minimap if bot is not moving
                     sleep(3)
                     if not self.is_moving():
-                        success = self.minimap.click_next_target()
+                        success = self.detection.minimap.click_next_target()
                         if not success:
-                            self.minimap.click_random_position()
+                            self.detection.minimap.click_random_position()
                         else:
                             self.lock.acquire()
                             self.state = BotState.COLLECTING

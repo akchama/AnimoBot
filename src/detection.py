@@ -1,13 +1,11 @@
 from threading import Thread, Lock
 from time import sleep
-
 import cv2
-import numpy as np
 from pytesseract import pytesseract
-
 from entities.coordinates import Coordinates
 from entities.message import Message
-from helpers import get_locations, is_match
+from entities.minimap import MiniMap
+from helpers import get_locations
 
 pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
@@ -15,26 +13,34 @@ pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 class Detection:
     TOP_BAR_OFFSET = 29
 
+    TARGET_FOUND_THRESHOLD = 0.9
+
     # threading properties
     stopped = True
     lock = None
     targets = []
+    minimap_targets = []
+
     features = []
     # properties
     # cascade = None
     _screenshot = None
     _oyster_img = None
-    _id_img = None
 
+    minimap_box_img = None
+
+    # initialize screen features
     message: Message = None
     coordinates: Coordinates = None
+    minimap: MiniMap = None
 
     def __init__(self, sleep_time):  # you can pass cascade file path here in the future
         # create a thread lock object
         self.lock = Lock()
 
-        # load oyster img
+        # load images
         _oyster_img = cv2.imread("../img/1.png", cv2.IMREAD_UNCHANGED)
+        _minimap_box_img = cv2.imread("../img/box.jpg", cv2.IMREAD_UNCHANGED)
 
         # resize oyster image
         scale_percent = 30  # percent of original size
@@ -44,7 +50,7 @@ class Detection:
         resized = cv2.resize(_oyster_img, dim, interpolation=cv2.INTER_AREA)
         # cv2.imshow("resized", resized)
         self._oyster_img = resized
-
+        self.minimap_box_img = _minimap_box_img
         self.sleep_time = sleep_time
 
     def update(self, screenshot):
@@ -94,6 +100,20 @@ class Detection:
 
                 rectangles, weights = cv2.groupRectangles(rectangles, 1, 0.2)
 
+                # do minimap detection
+                match_minimap = cv2.matchTemplate(self.minimap.get_area(self._screenshot),
+                                                  self.minimap_box_img, cv2.TM_CCOEFF_NORMED)
+                w = self.minimap_box_img.shape[1]
+                h = self.minimap_box_img.shape[0]
+                y_loc, x_loc = get_locations(match_minimap, self.TARGET_FOUND_THRESHOLD)  # accuracy threshold
+
+                minimap_rectangles = []
+                for x, y in zip(x_loc, y_loc):
+                    minimap_rectangles.append([int(x), int(y), int(w), int(h)])
+                    minimap_rectangles.append([int(x), int(y), int(w), int(h)])
+
+                minimap_rectangles, minimap_weights = cv2.groupRectangles(minimap_rectangles, 1, 0.2)
+
                 # lock the thread while updating the results
                 self.lock.acquire()
                 self.targets = rectangles
@@ -101,5 +121,6 @@ class Detection:
                     self.message.get_area_points(),
                     self.coordinates.get_area_points()
                 ]
+                self.minimap_targets = minimap_rectangles
                 self.lock.release()
                 sleep(self.sleep_time)
