@@ -5,6 +5,7 @@ from threading import Thread, Lock
 from math import sqrt
 
 from detection import Detection
+from entities.minimap import MiniMap
 
 
 class BotState:
@@ -34,6 +35,7 @@ class AnimoBot:
     click_history = []
 
     detection: Detection = None
+    minimap: MiniMap = None
 
     def __init__(self, window_offset, window_size, detection, minimap):
         # create a thread lock object
@@ -153,14 +155,6 @@ class AnimoBot:
     def stop(self):
         self.stopped = True
 
-    def click_random_position(self):
-        # click a random position on the screen
-        x = randint(0, self.window_w)
-        y = randint(0, self.window_h)
-        x, y = self.get_screen_position((x, y))
-        pyautogui.moveTo(x=x, y=y)
-        pyautogui.click()
-
     # main logic controller
     def run(self):
         while not self.stopped:
@@ -178,6 +172,7 @@ class AnimoBot:
                 success = self.click_next_target()
                 # if not successful, try one more time
                 if not success:
+                    sleep(1)
                     success = self.click_next_target()
 
                 # if successful, switch state to moving
@@ -187,10 +182,10 @@ class AnimoBot:
                     self.state = BotState.COLLECTING
                     self.lock.release()
                 else:
-                    # click at a random position on the screen if bot is not moving
-                    # sleep(3)
-                    # if not self.is_moving():
-                    #     self.click_random_position()
+                    # click at a random position on the minimap if bot is not moving
+                    sleep(3)
+                    if not self.is_moving():
+                        self.minimap.click_random_position()
                     pass
 
             elif self.state == BotState.COLLECTING:

@@ -49,7 +49,6 @@ while True:
         targets = vision.get_click_points(detector.targets)
         bot.update_targets(targets)
         bot.update_screenshot(win_cap.screenshot)
-        print("Bot searching...")
         time.sleep(0.5)
     elif bot.state == BotState.ATTACKING:
         # nothing is needed while we wait for the attack to finish

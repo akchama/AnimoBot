@@ -13,6 +13,8 @@ pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
 
 class Detection:
+    TOP_BAR_OFFSET = 29
+
     # threading properties
     stopped = True
     lock = None
@@ -40,7 +42,7 @@ class Detection:
         height = int(_oyster_img.shape[0] * scale_percent / 100)
         dim = (width, height)
         resized = cv2.resize(_oyster_img, dim, interpolation=cv2.INTER_AREA)
-        cv2.imshow("resized", resized)
+        # cv2.imshow("resized", resized)
         self._oyster_img = resized
 
         self._text_img = cv2.imread("../img/text.jpg", cv2.IMREAD_UNCHANGED)
@@ -69,7 +71,8 @@ class Detection:
                     self._screenshot
                 )  # return area to be scanned for text
                 text = pytesseract.image_to_string(restricted_text_area)
-                print(text)
+                if text != "":
+                    print(text)
 
                 # do object detection
                 template = self._oyster_img[:, :, 0:3]
@@ -77,19 +80,19 @@ class Detection:
                 alpha = cv2.merge([alpha, alpha, alpha])
 
                 h = self._screenshot.shape[0]
-                sea_area = self._screenshot[:h - 67, :]
+                sea_area = self._screenshot[self.TOP_BAR_OFFSET:h - 67, :]
                 match = cv2.matchTemplate(
                     sea_area, template, cv2.TM_CCORR_NORMED, mask=alpha
                 )
 
                 w = self._oyster_img.shape[1]
                 h = self._oyster_img.shape[0]
-                y_loc, x_loc = get_locations(match, 0.95)  # accuracy threshold
+                y_loc, x_loc = get_locations(match, 0.94)  # accuracy threshold
 
                 rectangles = []
                 for x, y in zip(x_loc, y_loc):
-                    rectangles.append([int(x), int(y), int(w), int(h)])
-                    rectangles.append([int(x), int(y), int(w), int(h)])
+                    rectangles.append([int(x), int(y + self.TOP_BAR_OFFSET), int(w), int(h)])
+                    rectangles.append([int(x), int(y + self.TOP_BAR_OFFSET), int(w), int(h)])
 
                 rectangles, weights = cv2.groupRectangles(rectangles, 1, 0.2)
 
