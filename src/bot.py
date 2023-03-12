@@ -185,8 +185,13 @@ class AnimoBot:
                     # click at a random position on the minimap if bot is not moving
                     sleep(3)
                     if not self.is_moving():
-                        self.minimap.click_random_position()
-                    pass
+                        success = self.minimap.click_next_target()
+                        if not success:
+                            self.minimap.click_random_position()
+                        else:
+                            self.lock.acquire()
+                            self.state = BotState.COLLECTING
+                            self.lock.release()
 
             elif self.state == BotState.COLLECTING:
                 sleep(1)

@@ -45,8 +45,6 @@ class Detection:
         # cv2.imshow("resized", resized)
         self._oyster_img = resized
 
-        self._text_img = cv2.imread("../img/text.jpg", cv2.IMREAD_UNCHANGED)
-
         self.sleep_time = sleep_time
 
     def update(self, screenshot):

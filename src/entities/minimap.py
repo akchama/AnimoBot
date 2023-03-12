@@ -35,6 +35,17 @@ class MiniMap:
         time.sleep(1.250)
         pyautogui.click()
 
+    def click_next_target(self):
+        screen_x, screen_y = self.get_screen_position(target_pos)
+        print("Moving mouse to x:{} y:{}".format(screen_x, screen_y))
+        pyautogui.moveTo(x=screen_x, y=screen_y)
+
+        # short pause to let the mouse movement complete and allow
+        time.sleep(1.250)
+        
+        print("Click on target at x:{} y:{}".format(screen_x, screen_y))
+        pyautogui.click()
+
     def get_screen_position(self, pos):
         return \
             pos[0] + self.win_cap.offset_x + self.win_cap.w - self.OFFSET_X_FROM_RIGHT, \
