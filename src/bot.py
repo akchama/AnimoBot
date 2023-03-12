@@ -4,6 +4,8 @@ from time import sleep, time
 from threading import Thread, Lock
 from math import sqrt
 
+from detection import Detection
+
 
 class BotState:
     INITIALIZING = 0
@@ -15,7 +17,6 @@ class BotState:
 class AnimoBot:
     # constants
     INITIALIZING_SECONDS = 6
-    MOVEMENT_STOPPED_THRESHOLD = 0.975
     IGNORE_RADIUS = 130
     TOOLTIP_MATCH_THRESHOLD = 0.72
 
@@ -31,6 +32,8 @@ class AnimoBot:
     movement_screenshot = None
     window_offset = (0, 0)
     click_history = []
+
+    detection: Detection = None
 
     def __init__(self, window_offset, window_size, detection, minimap):
         # create a thread lock object
@@ -88,6 +91,7 @@ class AnimoBot:
             # if self.confirm_tooltip(target_pos):
             print("Click on confirmed target at x:{} y:{}".format(screen_x, screen_y))
             found_collectable = True
+            self.state = BotState.COLLECTING
             pyautogui.click()
             # save this position to the click history
             self.click_history.append(target_pos)
@@ -96,7 +100,7 @@ class AnimoBot:
         return found_collectable
 
     def is_moving(self):
-        return False
+        return self.detection.coordinates.has_changed()
 
     def targets_ordered_by_distance(self, targets):
         # our character is always in the center of the screen

@@ -57,7 +57,7 @@ class WindowCapture:
         self.offset_x = window_rect[0] + self.cropped_x
         self.offset_y = window_rect[1] + self.cropped_y
 
-    def get_screenshot(self):
+    def _get_screenshot(self):
         # get the window image data
         wDC = win32gui.GetWindowDC(self.hwnd)
         dcObj = win32ui.CreateDCFromHandle(wDC)
@@ -133,7 +133,7 @@ class WindowCapture:
         # TODO: you can write your own time/iterations calculation to determine how fast this is
         while not self.stopped:
             # get an updated image of the game
-            screenshot = self.get_screenshot()
+            screenshot = self._get_screenshot()
             # lock the thread while updating the results
             self.lock.acquire()
             self.screenshot = screenshot

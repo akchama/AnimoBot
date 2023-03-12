@@ -90,6 +90,3 @@ class Detection:
                 ]
                 self.lock.release()
                 sleep(self.sleep_time)
-
-    def coordinate_changed(self):
-        pass
