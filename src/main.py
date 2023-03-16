@@ -1,11 +1,14 @@
 import time
+
 import cv2 as cv
+
 import vision
 from bot import AnimoBot, BotState
 from detection import Detection
 from entities.coordinates import Coordinates
+from entities.map import Map
 from entities.message import Message
-from entities.minimap import MiniMap
+# from entities.minimap import MiniMap
 from windowcapture import WindowCapture
 
 DEBUG = True
@@ -16,7 +19,7 @@ win_cap = WindowCapture("Terror of Sea", sleep_time=0.5)
 detector = Detection(sleep_time=0.5)
 detector.coordinates = Coordinates(win_cap)
 detector.message = Message(win_cap)
-detector.minimap = MiniMap(win_cap, detector)
+detector.map = Map(win_cap)
 
 bot = AnimoBot(
     (win_cap.offset_x, win_cap.offset_y), (win_cap.w, win_cap.h), detector

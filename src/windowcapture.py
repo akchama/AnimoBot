@@ -1,8 +1,10 @@
 import time
+from threading import Thread, Lock
 
 import numpy as np
-import win32gui, win32ui, win32con
-from threading import Thread, Lock
+import win32con
+import win32gui
+import win32ui
 
 
 class WindowCapture:
@@ -75,8 +77,8 @@ class WindowCapture:
 
         # convert the raw data into a format opencv can read
         # dataBitMap.SaveBitmapFile(cDC, 'debug.bmp')
-        signedIntsArray = dataBitMap.GetBitmapBits(True)
-        img = np.fromstring(signedIntsArray, dtype="uint8")
+        signed_ints_array = dataBitMap.GetBitmapBits(True)
+        img = np.fromstring(signed_ints_array, dtype="uint8")
         img.shape = (self.h, self.w, 4)
 
         # free resources

@@ -1,11 +1,13 @@
-from random import randint
-import pyautogui
-from time import sleep, time
-from threading import Thread, Lock
 from math import sqrt
+from threading import Thread, Lock
+from time import sleep, time
+
+import pyautogui
 
 from detection import Detection
-from entities.minimap import MiniMap
+
+
+# from entities.minimap import MiniMap
 
 
 class BotState:
@@ -36,7 +38,7 @@ class AnimoBot:
 
     detection: Detection = None
 
-    def __init__(self, window_offset, window_size, detection):
+    def __init__(self, window_offset, window_size, detection, map):
         # create a thread lock object
         self.lock = Lock()
 
@@ -48,6 +50,7 @@ class AnimoBot:
         self.window_h = window_size[1]
 
         self.detection = detection  # set the Detection object instance
+        self.map = map
 
         # start bot in the initializing mode to allow us time to get setup.
         # mark the time at which this started so, we know when to complete it
@@ -177,9 +180,9 @@ class AnimoBot:
                     # click at a random position on the minimap if bot is not moving
                     sleep(3)
                     if not self.is_moving():
-                        success = self.detection.minimap.click_next_target()
+                        success = self.click_next_target()
                         if not success:
-                            self.detection.minimap.click_random_position()
+                            self.detection.map.click_random_position()
                         else:
                             self.lock.acquire()
                             self.state = BotState.COLLECTING

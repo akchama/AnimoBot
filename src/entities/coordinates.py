@@ -4,8 +4,9 @@ so we can know if the player is moving or not
 """
 import time
 
-from windowcapture import WindowCapture
 from cv2 import cv2 as cv
+
+from windowcapture import WindowCapture
 
 
 class Coordinates:

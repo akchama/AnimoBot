@@ -1,7 +1,5 @@
 import cv2 as cv
 import numpy as np
-from entities.coordinates import Coordinates
-from entities.message import Message
 
 
 # given a list of [x, y, w, h] rectangles returned by find(), convert those into a list of
